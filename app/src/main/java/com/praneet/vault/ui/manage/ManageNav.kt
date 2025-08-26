@@ -19,10 +19,9 @@ fun ManageNav() {
         composable(
             route = "accounts/{userId}",
             arguments = listOf(navArgument("userId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val userId = backStackEntry.arguments!!.getLong("userId")
+        ) {
             AccountTypesScreen(
-                userId = userId,
+                userId = 0L,
                 onAccountTypeClick = { typeId -> navController.navigate("entries/$typeId") }
             )
         }

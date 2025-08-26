@@ -1,9 +1,8 @@
 package com.praneet.vault.data
 
-import android.content.Context
 import kotlinx.coroutines.flow.Flow
 
-class VaultRepository private constructor(
+class VaultRepository(
     private val userDao: UserDao,
     private val accountTypeDao: AccountTypeDao,
     private val entryDao: EntryDao
@@ -27,15 +26,7 @@ class VaultRepository private constructor(
     suspend fun updateEntry(entry: EntryEntity) = entryDao.update(entry)
     suspend fun deleteEntry(entry: EntryEntity) = entryDao.delete(entry)
 
-    companion object {
-        @Volatile
-        private var INSTANCE: VaultRepository? = null
-
-        fun get(context: Context): VaultRepository = INSTANCE ?: synchronized(this) {
-            val db = AppDatabase.getInstance(context)
-            INSTANCE ?: VaultRepository(db.userDao(), db.accountTypeDao(), db.entryDao()).also { INSTANCE = it }
-        }
-    }
+    // No companion singleton. Use DI to provide this class.
 }
 
 

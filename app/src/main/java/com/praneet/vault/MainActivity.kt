@@ -29,7 +29,9 @@ import androidx.navigation.compose.rememberNavController
 import com.praneet.vault.ui.manage.ManageNav
 import com.praneet.vault.ui.search.SearchScreen
 import com.praneet.vault.ui.theme.VaultTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

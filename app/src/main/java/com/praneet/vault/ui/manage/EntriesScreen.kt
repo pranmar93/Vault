@@ -28,7 +28,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.platform.LocalContext
@@ -38,13 +37,16 @@ import androidx.compose.ui.focus.focusRequester
 import com.praneet.vault.data.EntryEntity
 import com.praneet.vault.data.VaultRepository
 import com.praneet.vault.common.utils.ValidationUtils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class EntriesViewModel(app: Application, private val accountTypeId: Long) : AndroidViewModel(app) {
-    private val repo = VaultRepository.get(app)
+@HiltViewModel
+class EntriesViewModel @Inject constructor(app: Application, private val repo: VaultRepository, private val savedStateHandle: androidx.lifecycle.SavedStateHandle) : AndroidViewModel(app) {
+    private val accountTypeId: Long = savedStateHandle.get<Long>("accountTypeId") ?: 0L
     val entries: StateFlow<List<EntryEntity>> = repo.observeEntries(accountTypeId)
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -55,13 +57,7 @@ class EntriesViewModel(app: Application, private val accountTypeId: Long) : Andr
 
 @Composable
 fun EntriesScreen(accountTypeId: Long) {
-    val app = LocalContext.current.applicationContext as Application
-    val vm: EntriesViewModel = viewModel(factory = object: ViewModelProvider.Factory{
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            @Suppress("UNCHECKED_CAST")
-            return EntriesViewModel(app, accountTypeId) as T
-        }
-    })
+    val vm: EntriesViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 
     val entries by vm.entries.collectAsState()
     var showAdd by remember { mutableStateOf(false) }

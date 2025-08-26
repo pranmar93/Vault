@@ -27,7 +27,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.platform.LocalContext
@@ -37,14 +36,16 @@ import androidx.compose.ui.focus.focusRequester
 import com.praneet.vault.data.UserEntity
 import com.praneet.vault.data.VaultRepository
 import com.praneet.vault.common.utils.ValidationUtils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class UsersViewModel(app: Application) : AndroidViewModel(app) {
-    private val repo = VaultRepository.get(app)
+@HiltViewModel
+class UsersViewModel @Inject constructor(app: Application, private val repo: VaultRepository) : AndroidViewModel(app) {
     val users: StateFlow<List<UserEntity>> = repo.observeUsers()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -54,15 +55,7 @@ class UsersViewModel(app: Application) : AndroidViewModel(app) {
 }
 
 @Composable
-fun UsersScreen(onUserClick: (Long) -> Unit, vm: UsersViewModel = run {
-    val app = LocalContext.current.applicationContext as Application
-    viewModel(factory = object: ViewModelProvider.Factory{
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            @Suppress("UNCHECKED_CAST")
-            return UsersViewModel(app) as T
-        }
-    })
-}) {
+fun UsersScreen(onUserClick: (Long) -> Unit, vm: UsersViewModel = androidx.hilt.navigation.compose.hiltViewModel()) {
     val users by vm.users.collectAsState()
     var showAdd by remember { mutableStateOf(false) }
     var editingUser by remember { mutableStateOf<UserEntity?>(null) }

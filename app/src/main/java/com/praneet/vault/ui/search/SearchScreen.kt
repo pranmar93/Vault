@@ -16,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.platform.LocalContext
@@ -26,10 +25,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.praneet.vault.data.AccountTypeEntity
 import com.praneet.vault.data.UserEntity
 import com.praneet.vault.data.VaultRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import javax.inject.Inject
 
-class SearchViewModel(app: Application) : AndroidViewModel(app) {
-    private val repo = VaultRepository.get(app)
+@HiltViewModel
+class SearchViewModel @Inject constructor(app: Application, private val repo: VaultRepository) : AndroidViewModel(app) {
     val users: StateFlow<List<UserEntity>> = repo.observeUsers().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val selectedUserId = MutableStateFlow<Long?>(null)
@@ -59,15 +60,7 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
 }
 
 @Composable
-fun SearchScreen(vm: SearchViewModel = run {
-    val app = LocalContext.current.applicationContext as Application
-    viewModel(factory = object: ViewModelProvider.Factory{
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            @Suppress("UNCHECKED_CAST")
-            return SearchViewModel(app) as T
-        }
-    })
-}) {
+fun SearchScreen(vm: SearchViewModel = androidx.hilt.navigation.compose.hiltViewModel()) {
     val users by vm.users.collectAsState()
     val types by vm.accountTypes.collectAsState()
     val keys by vm.keys.collectAsState()

@@ -29,7 +29,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.platform.LocalContext
@@ -39,13 +38,16 @@ import androidx.compose.ui.focus.focusRequester
 import com.praneet.vault.data.AccountTypeEntity
 import com.praneet.vault.data.VaultRepository
 import com.praneet.vault.common.utils.ValidationUtils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AccountTypesViewModel(app: Application, private val userId: Long) : AndroidViewModel(app) {
-    private val repo = VaultRepository.get(app)
+@HiltViewModel
+class AccountTypesViewModel @Inject constructor(app: Application, private val repo: VaultRepository, private val savedStateHandle: androidx.lifecycle.SavedStateHandle) : AndroidViewModel(app) {
+    private val userId: Long = savedStateHandle.get<Long>("userId") ?: 0L
     val types: StateFlow<List<AccountTypeEntity>> = repo.observeAccountTypes(userId)
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -56,13 +58,7 @@ class AccountTypesViewModel(app: Application, private val userId: Long) : Androi
 
 @Composable
 fun AccountTypesScreen(userId: Long, onAccountTypeClick: (Long) -> Unit) {
-    val app = LocalContext.current.applicationContext as Application
-    val vm: AccountTypesViewModel = viewModel(factory = object: ViewModelProvider.Factory{
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            @Suppress("UNCHECKED_CAST")
-            return AccountTypesViewModel(app, userId) as T
-        }
-    })
+    val vm: AccountTypesViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 
     val types by vm.types.collectAsState()
     var showAdd by remember { mutableStateOf(false) }
