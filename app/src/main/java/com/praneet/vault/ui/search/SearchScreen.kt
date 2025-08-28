@@ -1,63 +1,23 @@
 package com.praneet.vault.ui.search
 
-import android.app.Application
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import com.praneet.vault.ui.components.DropdownField
-import com.praneet.vault.ui.components.ReadOnlyScrollableField
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewModelScope
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.praneet.vault.data.AccountTypeEntity
-import com.praneet.vault.data.UserEntity
-import com.praneet.vault.data.VaultRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
-import javax.inject.Inject
-
-@HiltViewModel
-class SearchViewModel @Inject constructor(app: Application, private val repo: VaultRepository) : AndroidViewModel(app) {
-    val users: StateFlow<List<UserEntity>> = repo.observeUsers().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    private val selectedUserId = MutableStateFlow<Long?>(null)
-    val accountTypes: StateFlow<List<AccountTypeEntity>> = selectedUserId
-        .flatMapLatest { id -> if (id == null) flowOf(emptyList()) else repo.observeAccountTypes(id) }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    private val selectedTypeId = MutableStateFlow<Long?>(null)
-    private val selectedKey = MutableStateFlow<String?>(null)
-
-    // Keys for selected account type
-    val keys: StateFlow<List<String>> = selectedTypeId
-        .flatMapLatest { typeId ->
-            if (typeId == null) flowOf(emptyList()) else repo.observeEntries(typeId).map { list -> list.map { it.key } }
-        }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    val value: StateFlow<String> = combine(selectedTypeId, selectedKey) { typeId, key ->
-        Pair(typeId, key)
-    }.flatMapLatest { (typeId, key) ->
-        if (typeId == null || key.isNullOrBlank()) flowOf("") else repo.observeValue(typeId, key).map { it ?: "" }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, "")
-
-    fun onUserSelected(id: Long?) { selectedUserId.value = id; selectedTypeId.value = null; selectedKey.value = null }
-    fun onTypeSelected(id: Long?) { selectedTypeId.value = id; selectedKey.value = null }
-    fun onKeySelected(key: String?) { selectedKey.value = key }
-}
+import com.praneet.vault.ui.components.DropdownField
+import com.praneet.vault.ui.components.ReadOnlyScrollableField
+import com.praneet.vault.viewmodel.search.SearchViewModel
 
 @Composable
 fun SearchScreen(vm: SearchViewModel = androidx.hilt.navigation.compose.hiltViewModel()) {
@@ -66,9 +26,9 @@ fun SearchScreen(vm: SearchViewModel = androidx.hilt.navigation.compose.hiltView
     val keys by vm.keys.collectAsState()
     val value by vm.value.collectAsState()
 
-    var selectedUserIndex by remember { mutableStateOf(-1) }
-    var selectedTypeIndex by remember { mutableStateOf(-1) }
-    var selectedKeyIndex by remember { mutableStateOf(-1) }
+    var selectedUserIndex by remember { mutableIntStateOf(-1) }
+    var selectedTypeIndex by remember { mutableIntStateOf(-1) }
+    var selectedKeyIndex by remember { mutableIntStateOf(-1) }
 
     Column(Modifier.padding(16.dp)) {
         DropdownField(
@@ -77,8 +37,13 @@ fun SearchScreen(vm: SearchViewModel = androidx.hilt.navigation.compose.hiltView
             selectedIndex = if (selectedUserIndex < 0) 0 else selectedUserIndex + 1,
             enabled = true,
             onSelected = { idx ->
-                if (idx == 0) { selectedUserIndex = -1; vm.onUserSelected(null) }
-                else { selectedUserIndex = idx - 1; vm.onUserSelected(users[selectedUserIndex].id) }
+                if (idx == 0) {
+                    selectedUserIndex = -1
+                    vm.onUserSelected(null)
+                } else {
+                    selectedUserIndex = idx - 1
+                    vm.onUserSelected(users[selectedUserIndex].id)
+                }
                 selectedTypeIndex = -1
             }
         )
@@ -89,8 +54,17 @@ fun SearchScreen(vm: SearchViewModel = androidx.hilt.navigation.compose.hiltView
             selectedIndex = if (selectedTypeIndex < 0) 0 else selectedTypeIndex + 1,
             enabled = selectedUserIndex >= 0,
             onSelected = { idx ->
-                if (idx == 0) { selectedTypeIndex = -1; vm.onTypeSelected(null); selectedKeyIndex = -1; vm.onKeySelected(null) }
-                else { selectedTypeIndex = idx - 1; vm.onTypeSelected(types[selectedTypeIndex].id); selectedKeyIndex = -1; vm.onKeySelected(null) }
+                if (idx == 0) {
+                    selectedTypeIndex = -1
+                    vm.onTypeSelected(null)
+                    selectedKeyIndex = -1
+                    vm.onKeySelected(null)
+                } else {
+                    selectedTypeIndex = idx - 1
+                    vm.onTypeSelected(types[selectedTypeIndex].id)
+                    selectedKeyIndex = -1
+                    vm.onKeySelected(null)
+                }
             }
         )
 
@@ -100,15 +74,22 @@ fun SearchScreen(vm: SearchViewModel = androidx.hilt.navigation.compose.hiltView
             selectedIndex = if (selectedKeyIndex < 0) 0 else selectedKeyIndex + 1,
             enabled = selectedUserIndex >= 0 && selectedTypeIndex >= 0,
             onSelected = { idx ->
-                if (idx == 0) { selectedKeyIndex = -1; vm.onKeySelected(null) }
-                else { selectedKeyIndex = idx - 1; vm.onKeySelected(keys[selectedKeyIndex]) }
+                if (idx == 0) {
+                    selectedKeyIndex = -1
+                    vm.onKeySelected(null)
+                } else {
+                    selectedKeyIndex = idx - 1
+                    vm.onKeySelected(keys[selectedKeyIndex])
+                }
             }
         )
 
         ReadOnlyScrollableField(
             label = "Value",
             value = value,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         )
     }
 

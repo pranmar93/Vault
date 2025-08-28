@@ -7,9 +7,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.TextFieldValue
 
 @Composable
-fun ConfirmDeleteDialog(title: String, message: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+fun ConfirmDeleteDialog(
+    title: String,
+    message: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
@@ -53,13 +59,13 @@ fun SingleFieldDialog(
 @Composable
 fun TwoFieldDialog(
     title: String,
-    keyValue: androidx.compose.ui.text.input.TextFieldValue,
-    valueValue: androidx.compose.ui.text.input.TextFieldValue,
+    keyValue: TextFieldValue,
+    valueValue: TextFieldValue,
     keyError: String?,
     valueError: String?,
-    keyModifier: Modifier = Modifier,
-    onKeyChange: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
-    onValueChange: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
+    modifier: Modifier = Modifier,
+    onKeyChange: (TextFieldValue) -> Unit,
+    onValueChange: (TextFieldValue) -> Unit,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -68,8 +74,21 @@ fun TwoFieldDialog(
         title = { Text(title) },
         text = {
             Column {
-                OutlinedTextField(value = keyValue, onValueChange = onKeyChange, singleLine = true, isError = keyError != null, label = { Text("Key") }, supportingText = { if (keyError != null) Text(keyError) }, modifier = keyModifier)
-                OutlinedTextField(value = valueValue, onValueChange = onValueChange, isError = valueError != null, label = { Text("Value") }, supportingText = { if (valueError != null) Text(valueError) })
+                OutlinedTextField(
+                    value = keyValue,
+                    onValueChange = onKeyChange,
+                    singleLine = true,
+                    isError = keyError != null,
+                    label = { Text("Key") },
+                    supportingText = { if (keyError != null) Text(keyError) },
+                    modifier = modifier
+                )
+                OutlinedTextField(
+                    value = valueValue,
+                    onValueChange = onValueChange,
+                    isError = valueError != null,
+                    label = { Text("Value") },
+                    supportingText = { if (valueError != null) Text(valueError) })
             }
         },
         confirmButton = { TextButton(onClick = onConfirm) { Text("Save") } },

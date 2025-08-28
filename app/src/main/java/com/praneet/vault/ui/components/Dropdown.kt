@@ -30,7 +30,12 @@ fun DropdownField(
             label = { Text(label) },
             readOnly = true,
             enabled = enabled,
-            trailingIcon = { Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null) },
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = null
+                )
+            },
             modifier = Modifier.fillMaxWidth()
         )
         Box(
@@ -40,7 +45,12 @@ fun DropdownField(
         )
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEachIndexed { index, text ->
-                DropdownMenuItem(text = { Text(text) }, onClick = { onSelected(index); expanded = false })
+                DropdownMenuItem(
+                    text = { Text(text) },
+                    onClick = {
+                        onSelected(index)
+                        expanded = false
+                    })
             }
         }
     }

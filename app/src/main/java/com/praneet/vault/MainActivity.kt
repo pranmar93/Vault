@@ -18,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -26,7 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.praneet.vault.ui.manage.ManageNav
+import com.praneet.vault.ui.manage.navigation.ManageNav
 import com.praneet.vault.ui.search.SearchScreen
 import com.praneet.vault.ui.theme.VaultTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,22 +50,29 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun VaultApp() {
     val navController = rememberNavController()
-    
+
     Scaffold(
         bottomBar = {
             NavigationBar {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
-                
+
                 listOf(
                     Screen.Manage,
                     Screen.Search
                 ).forEach { screen ->
                     NavigationBarItem(
-                        icon = { 
+                        icon = {
                             when (screen) {
-                                Screen.Manage -> Icon(imageVector = Icons.Filled.List, contentDescription = stringResource(id = screen.titleResId))
-                                Screen.Search -> Icon(imageVector = Icons.Filled.Search, contentDescription = stringResource(id = screen.titleResId))
+                                Screen.Manage -> Icon(
+                                    imageVector = Icons.Filled.List,
+                                    contentDescription = stringResource(id = screen.titleResId)
+                                )
+
+                                Screen.Search -> Icon(
+                                    imageVector = Icons.Filled.Search,
+                                    contentDescription = stringResource(id = screen.titleResId)
+                                )
                             }
                         },
                         label = { Text(stringResource(id = screen.titleResId)) },

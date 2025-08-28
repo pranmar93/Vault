@@ -1,4 +1,4 @@
-package com.praneet.vault.ui.manage
+package com.praneet.vault.ui.manage.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
@@ -6,6 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.praneet.vault.ui.manage.AccountTypesScreen
+import com.praneet.vault.ui.manage.EntriesScreen
+import com.praneet.vault.ui.manage.UsersScreen
 
 @Composable
 fun ManageNav() {
@@ -21,7 +24,6 @@ fun ManageNav() {
             arguments = listOf(navArgument("userId") { type = NavType.LongType })
         ) {
             AccountTypesScreen(
-                userId = 0L,
                 onAccountTypeClick = { typeId -> navController.navigate("entries/$typeId") }
             )
         }
@@ -29,8 +31,7 @@ fun ManageNav() {
             route = "entries/{accountTypeId}",
             arguments = listOf(navArgument("accountTypeId") { type = NavType.LongType })
         ) { backStackEntry ->
-            val accountTypeId = backStackEntry.arguments!!.getLong("accountTypeId")
-            EntriesScreen(accountTypeId = accountTypeId)
+            EntriesScreen()
         }
     }
 }

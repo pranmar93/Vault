@@ -1,11 +1,11 @@
 package com.praneet.vault.di
 
 import android.content.Context
-import com.praneet.vault.data.AppDatabase
-import com.praneet.vault.data.VaultRepository
-import com.praneet.vault.data.UserDao
-import com.praneet.vault.data.AccountTypeDao
-import com.praneet.vault.data.EntryDao
+import com.praneet.vault.data.db.VaultDatabase
+import com.praneet.vault.repo.VaultRepository
+import com.praneet.vault.data.dao.AccountTypeDao
+import com.praneet.vault.data.dao.EntryDao
+import com.praneet.vault.data.dao.UserDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,17 +19,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
-        AppDatabase.getInstance(context)
+    fun provideDatabase(@ApplicationContext context: Context): VaultDatabase =
+        VaultDatabase.getInstance(context)
 
     @Provides
-    fun provideUserDao(db: AppDatabase) = db.userDao()
+    fun provideUserDao(db: VaultDatabase) = db.userDao()
 
     @Provides
-    fun provideAccountTypeDao(db: AppDatabase) = db.accountTypeDao()
+    fun provideAccountTypeDao(db: VaultDatabase) = db.accountTypeDao()
 
     @Provides
-    fun provideEntryDao(db: AppDatabase) = db.entryDao()
+    fun provideEntryDao(db: VaultDatabase) = db.entryDao()
 
     @Provides
     @Singleton
